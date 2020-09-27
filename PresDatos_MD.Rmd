@@ -1,0 +1,297 @@
+---
+title: "Presentación de datos"
+author: "Mercy Díaz"
+date: "27/9/2020"
+output: html_document
+---
+
+Hito 2 - Presentación de datos por alumno
+
+
+Primero:
+Variable dependiente: Gender Inequality Index (GII)
+
+NOTA: La siguiente base de datos fue encontrada en la página web de United Nations Development Programme que permite descargar la información en formato "csv". Luego la data fue subida a mi repositorio personal de GitHub con el nombre de "index.csv" para poder importarla desde ahí.
+
+Importamos base de datos 1
+```{r}
+#Abrimos library rio
+library(rio)
+
+#Vamos a importar la base desde GitHub
+#Creamos el objeto linkindex
+linkindex="https://raw.githubusercontent.com/mercy-diaz/ProyectoEst/master/Bases%20originales/index.csv"
+
+#Usamos la función import para traer la data
+#A la base le asignamos el nombre "index"
+index=import(linkindex)
+
+#Usamos funcion str para revisar la data
+str(index)
+```
+
+Nos quedamos solo con las columnas que vamos a utilizar
+```{r}
+index=index[,c(2,25)]
+```
+
+Cambiamos los nombres de las columnas
+```{r}
+names(index)=c("Pais","GIIIndex")
+```
+
+Revisamos las columnas que tenemos:
+
+Empezamos con columna "Pais"
+```{r}
+#Nos aseguramos de que los nombres de los países estén limpios
+index$Pais
+```
+
+Limpiamos los nombres en columna "Pais"
+```{r}
+#Aplicamos la función gsub para reemplazar los símbolos no deseados
+index$Pais = gsub("CÃ´te d'Ivoire","Côte d'Ivoire",index$Pais)
+```
+
+Verificamos:
+```{r}
+index$Pais
+```
+
+Continuamos con la columna "GIIIndex"
+```{r}
+#Observamos que tiene elementos no deseados ("") que debemos eliminar
+str(index$GIIIndex)
+```
+
+Limpiamos la columna "GIIIndex"
+```{r}
+#En este caso podemos usar la función str_split
+#Primero abrimos library stringr
+library(stringr)
+
+#Revisamos en qué partición está el dato que nos interesa
+str_split(string = index$GIIIndex,
+          pattern = '\\"',
+          simplify = T)
+#El dato se encuentra en la partición 2
+
+#Creamos una nueva columna "GII"
+index$GII = str_split(string = index$GIIIndex,
+          pattern = '\\"',
+          simplify = T)[,2]
+```
+
+Revisamos la nueva columna GII
+```{r}
+#Observamos que está limpia
+str(index$GII)
+
+#Ahora la información deber ser convertida a valores numéricos
+index$GII = as.numeric(index$GII)
+```
+
+Verificamos
+```{r}
+#Aplicamos función str para revisar la columna GII
+str(index$GII)
+#Ahora es numérica
+```
+
+Nos quedamos con las columnas que vamos a usar
+```{r}
+index = index[,c(1,3)]
+```
+
+
+NOTA: La base original de donde se recogieron las variables independientes fue encontrada en la página web de Organisation for Economic Co-Operation and Development (OECD) que permite descargar la información en formato "csv". Luego la data fue subida a mi repositorio personal de GitHub con el nombre de "GIDDB2019Completa.csv" y está incluida como referencia dentro de la carpeta "Bases originales". En el link fuente donde está ubicada la data existe la opción que permite personalizar la búsqueda y descargar solo las variables que se requieren. De ahí se obtuvieron las bases de datos 2 (autreprod) y 3 (violencia) que también están en la carpeta. Esas dos fueron las bases usadas para el procesamiento de datos que viene a continuación. 
+
+
+Segundo:
+Variable independiente: Reproductive autonomy
+
+Importamos la base de datos 2
+```{r}
+#No es necesario abrir library rio nuevamente
+
+#vamos a importar la base desde GitHub
+#Creamos el objeto linkautreprod
+linkautreprod="https://raw.githubusercontent.com/mercy-diaz/ProyectoEst/master/Bases%20originales/autreprod.csv"
+
+#Usamos la función import para traer la data
+#A la base le asignamos el nombre "autreprod"
+autreprod=import(linkautreprod)
+
+#Usamos funcion str para revisar la data
+str(index)
+```
+
+Nos quedamos con las columnas que vamos a utilizar
+```{r}
+autreprod = autreprod[,c(4,11)]
+```
+
+Cambiamos los nombres de las columnas
+```{r}
+names(autreprod) = c("Pais","Autonomia")
+```
+
+Revisamos y eliminamos posibles valores duplicados
+```{r}
+#Aplicamos función duplicated
+autreprod[duplicated(autreprod),]
+autreprod = autreprod[!duplicated(autreprod),]
+```
+
+Revisamos las columnas que tenemos:
+
+Empezamos con la columna "Pais"
+```{r}
+#Nos aseguramos de que los nombres de los países estén limpios
+autreprod$Pais
+#Observamos que se debe hacer una corrección
+```
+
+Limpiamos la columna "Pais"
+```{r}
+#Aplicamos la función gsub para reemplazar los símbolos no deseados
+autreprod$Pais = gsub("CÃ´te d'Ivoire","Côte d'Ivoire",autreprod$Pais)
+```
+
+Verificamos:
+```{r}
+autreprod$Pais
+```
+
+
+Tercero:
+Variable independiente: Violence against women
+
+Importamos la base de datos 3
+```{r}
+#No es necesario abrir library rio nuevamente
+
+#Vamos a importar la data desde GitHub
+#Creamos el objeto linkviolencia
+linkviolencia="https://raw.githubusercontent.com/mercy-diaz/ProyectoEst/master/Bases%20originales/violencia.csv"
+
+#Usamos la función import para traer la data
+#A la base le asignamos el nombre "violenciamuj"
+violenciamuj=import(linkviolencia)
+
+#Usamos función str para revisar la data
+str(violenciamuj)
+```
+
+Nos quedamos con las columnas que vamos a utilizar
+```{r}
+violenciamuj = violenciamuj[,c(4,11)]
+```
+
+Cambiamos los nombres de las columnas
+```{r}
+names(violenciamuj) = c("Pais","Violencia")
+```
+
+Revisamos y eliminamos valores duplicados
+```{r}
+#Aplicamos funcion duplicated
+violenciamuj[duplicated(violenciamuj),]
+violenciamuj = violenciamuj[!duplicated(violenciamuj),]
+```
+
+Revisamos las columnas que nos quedaron:
+
+Empezamos con la columna "Pais"
+```{r}
+#Nos aseguramos de que los nombres de los países estén limpios
+violenciamuj$Pais
+#Observamos que se debe hace una corrección
+```
+
+Limpiamos la columna "Pais"
+```{r}
+#Aplicamos la función gsub para reemplazar
+violenciamuj$Pais = gsub("CÃ´te d'Ivoire","Côte d'Ivoire",violenciamuj$Pais)
+```
+
+Revisamos nuevamente
+```{r}
+str(violenciamuj)
+```
+
+Cuarto:
+Ahora que ya hemos limpiado las bases vamos a fusionar una por una
+```{r}
+#Empezamos con bases 2 y 3
+#Para fusionar usamos función merge
+base1=merge(autreprod,violenciamuj,all.x=T,all.y=T)
+#De esta forma incluimos todos nuestros casos
+#Presupone que la primera columna será la columna guía
+```
+
+Revisamos
+```{r}
+base1$Pais
+```
+
+Modificamos algunos nombres para que la información se incorpore mejor
+```{r}
+base1$Pais = gsub('Bolivia',"Bolivia (Plurinational State of)",base1$Pais)
+base1$Pais = gsub('Democratic Republic of the Congo',"Congo (Democratic Republic of the)",base1$Pais)
+```
+
+```{r}
+base1$Pais
+```
+
+
+Ahora continuamos con la base que falta
+```{r}
+basefinal=merge(base1,index,all.x=T,all.y=T)
+```
+
+Limpiamos espacios en blanco en nombres de observaciones
+```{r}
+#Usamos la función trimws
+basefinal$Pais=trimws(basefinal$Pais,whitespace = "[\\h\\v]")
+```
+
+Revisamos el data frame
+```{r}
+data.frame(basefinal)
+```
+
+Buscamos casos duplicados
+```{r}
+basefinal[duplicated(basefinal$Pais),]
+basefinal[!complete.cases(basefinal),]
+```
+
+Finalmente:
+Exportamos base de datos
+```{r}
+export(basefinal,"basefinal_MD.csv")
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
