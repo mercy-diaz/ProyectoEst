@@ -1,0 +1,184 @@
+
+##HITO 3 - M.D.
+
+##EXPLORACION DE DATOS: ANALISIS UNIVARIADO Y BIVARIADO
+
+
+Traemos la base de datos del repositorio de GitHub
+```{r}
+library(rio)
+link="https://raw.githubusercontent.com/DanaeNorah/Estadistica-para-el-Analisis-Politico-2-/master/TRABAJO/basefinal.csv"
+base=import(link)
+```
+
+
+##Analisis univariado
+
+#Variable dependiente: Indice de Desigualdad de Genero
+```{r}
+#Solicitamos estadisticos descriptivos
+summary(base$DesigualdadGenero)
+```
+
+```{r}
+library(psych)
+describe.by(base$DesigualdadGenero)
+```
+
+
+```{r}
+#Analisis grafico de variable
+
+#Solicitamos histograma
+hist(base$DesigualdadGenero)
+```
+
+
+#Variable independiente: Autonomia reproductiva
+```{r}
+#Solicitamos estadisticos descriptivos
+summary(base$Autonomia)
+```
+
+```{r}
+describe.by(base$Autonomia)
+```
+
+
+```{r}
+#Analisis grafico de variable
+
+#Solicitamos histograma
+hist(base$Autonomia)
+```
+
+#Variable independiente: Violencia contra la mujer
+```{r}
+#Solicitamos estadisticos descriptivos
+summary(base$Violencia)
+```
+
+```{r}
+describe.by(base$Violencia)
+```
+
+
+```{r}
+#Analisis grafico de variable
+
+#Solicitamos histograma
+hist(base$Violencia)
+```
+
+
+##Antes de proceder con el análisis bivariado, vamos a recodificar las variables independientes (autonomia y violencia) para poder hacer un mejor analisis.
+
+#Variable Autonomia
+```{r}
+#Para recodificar tenemos que abrir la libreria car
+library(car)
+#Revisamos valores iniciales
+table(base$Autonomia)
+```
+
+```{r}
+#Para recodificar usamos la funcion recode
+base$Autonomia1 <- recode(base$Autonomia, "0=0 ; 0.25=0 ; 0.5=0.5 ; 0.75=1 ; 1=1")
+#Verificamos los nuevos valores
+table(base$Autonomia1)
+```
+
+```{r}
+#Luego, variable debe ser convertida en una variable tipo factor
+base$Autonomia1 <- as.factor(base$Autonomia1)
+
+#Le asignamos etiquetas a los valores
+levels(base$Autonomia1)<-c("Bueno","Regular","Malo")
+
+#verificamos
+str(base$Autonomia1)
+table(base$Autonomia1)
+```
+
+
+#Variable violencia
+```{r}
+#Revisamos los valores
+table(base$Violencia)
+```
+
+
+```{r}
+#Empleamos funcion recode
+base$Violencia1 <- recode(base$Violencia, "0=0 ; 0.25=0 ; 0.5=0.5 ; 0.75=1 ; 1=1")
+#Verificamos
+table(base$Violencia1)
+```
+
+```{r}
+#Luego, variable debe ser convertida en una variable tipo factor
+base$Violencia1 <- as.factor(base$Violencia1)
+
+#Le asignamos etiquetas a los valores
+levels(base$Violencia1)<-c("Bueno","Regular","Malo")
+
+#verificamos
+str(base$Violencia1)
+table(base$Violencia1)
+```
+
+##Analisis bivariado
+
+#Variables: Indice de Desigualdad de Genero y Autonomia reproductiva
+
+```{r}
+#Aplicamos la prueba ANOVA de un factor. Usamos la nueva variable creada unos pasos atrás.
+anovaautonomia <- aov(base$DesigualdadGenero ~ base$Autonomia1)
+summary(anovaautonomia)
+```
+
+```{r}
+#Prueba de comparaciones múltiples (Tukey)
+TukeyHSD(anovaautonomia)
+```
+
+```{r}
+#Gráfico de medias con intervalos de confianza (ver superposición)
+install.packages("gplots")
+library(gplots) 
+plotmeans(base$DesigualdadGenero ~ Autonomia1, data = base)
+```
+
+
+#Variables: Indice de Desigualdad de Genero y Violencia contra la mujer
+
+```{r}
+#Aplicamos la prueba ANOVA de un factor
+anovaviolencia <- aov(base$DesigualdadGenero ~ base$Violencia1)
+summary(anovaviolencia)
+```
+
+
+```{r}
+#Prueba de comparaciones múltiples (Tukey)
+TukeyHSD(anovaviolencia)
+```
+
+```{r}
+#Gráfico de medias con intervalos de confianza (ver superposición)
+plotmeans(base$DesigualdadGenero ~ Violencia1, data = base)
+```
+
+--FIN--
+
+
+
+
+
+
+
+
+
+
+
+
