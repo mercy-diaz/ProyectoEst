@@ -1,0 +1,182 @@
+
+```{r}
+library(rio)
+basefinal=import('https://raw.githubusercontent.com/DanaeNorah/Estadistica-para-el-Analisis-Politico-2-/master/TRABAJO/basefinal.csv')
+```
+
+```{r}
+library(car)
+#Para recodificar usamos la funcion recode
+basefinal$Autonomia1 <- recode(basefinal$Autonomia, "0=1 ; 0.25=0.75 ; 0.5=0.5 ; 0.75=0.25 ; 1=0")
+
+basefinal$Autonomia1 <-as.factor(basefinal$Autonomia1)
+
+basefinal$Autonomia1=factor(basefinal$Autonomia1,
+                            levels = levels(basefinal$Autonomia1),
+                            labels = c("5","4","3","2","1"),
+                            ordered = T)
+basefinal$Autonomia1 <-as.numeric(basefinal$Autonomia1)
+```
+
+
+```{r}
+basefinal$Violencia
+basefinal$Violencia1 <- recode(basefinal$Violencia, "0.25=0.75 ; 0.5=0.5 ; 0.75=0.25 ; 1=0")
+
+basefinal$Violencia1 <-as.factor(basefinal$Violencia1)
+
+basefinal$Violencia1=factor(basefinal$Violencia1,
+                            levels = levels(basefinal$Violencia1),
+                            labels = c("4","3","2","1"),
+                            ordered = T)
+basefinal$Violencia1 <-as.numeric(basefinal$Violencia1)
+```
+
+
+Creamos una subdata y nos quedamos con las variables a utilizar
+```{r}
+subdata <-basefinal[,c(5:12)]
+```
+
+##EFA
+
+#PASO 1. Calcular matriz
+```{r}
+library(polycor)
+matriz<-hetcor(subdata)
+matriz_corr<- matriz$correlations
+library(ggcorrplot)
+ggcorrplot(matriz_corr)
+```
+
+```{r}
+ggcorrplot(matriz_corr,
+           p.mat = cor_pmat(matriz_corr),
+           insig = "blank")
+```
+
+
+#PASO 2: Diagnostico
+
+Test de KMO
+```{r}
+library(psych)
+KMO(matriz_corr)
+#Chequear el overall MSA, que sea mayor a 0.5
+#Si es > a 0.5, el EFA va bien
+```
+
+Test de Bartlett
+```{r}
+cortest.bartlett(matriz_corr,n=nrow(subdata))$p.value>0.05
+```
+Test For Singular Square Matrix
+```{r}
+library(matrixcalc)
+is.singular.matrix(matriz_corr)
+```
+# Paso 3: Identificamos el número recomendado de factores y solicitamos el EFA
+
+Determinar en cuantos factores o variables latentes podríamos redimensionar
+```{r}
+fa.parallel(subdata,fm = 'ML', fa = 'fa')
+
+#Este comando y proximo son insumo basico para hacer el factorial
+#Vemos el diagrama de sedimentacion
+```
+
+Solicitamos el número de factores.
+
+```{r}
+library(GPArotation)
+factorial <- fa(subdata,nfactors = 3,cor = 'mixed',rotate = "varimax",fm="minres")
+#nfactors: 3 por el paso anterior
+```
+
+# Paso 4: Visualizamos el EFA solicitado
+
+```{r}
+print(factorial$loadings)
+```
+
+Vemos el resultado mejorado: Cuando logramos que cada variable se vaya a un factor, tenemos una estructura simple.
+
+```{r}
+print(factorial$loadings,cutoff = 0.5)
+```
+
+```{r}
+fa.diagram(factorial)
+```
+
+# Paso 5: Evaluamos el Análisis Factorial Exploratorio solicitado
+
+¿La Raíz del error cuadrático medio corregida está cerca a cero?
+
+```{r}
+factorial$crms
+#Es menor a 0.05. Valor 0.049
+```
+¿La Raíz del error cuadrático medio de aproximación es menor a 0.05?
+```{r}
+factorial$RMSEA
+#Mayor a 0.05. Valor: 0.063
+```
+
+
+¿El índice de Tucker-Lewis es mayor a 0.9?
+
+```{r}
+factorial$TLI
+#Es mayor a 0.9. Valor 0.942
+```
+
+ ¿Qué variables aportaron mas a los factores?
+```{r}
+sort(factorial$communality)
+#Secundaria, CuentaF, LibertadMov, AccesoJ
+```
+ 
+ ¿Qué variables contribuyen a mas de un factor?
+ 
+```{r}
+sort(factorial$complexity)
+```
+
+# Paso 6: Posibles valores proyectados
+
+Creamos un data set
+
+```{r}
+factorial_casos<-as.data.frame(factorial$scores)
+head(factorial_casos)
+```
+
+o incluirlos en nuestro subset original
+
+```{r}
+subdata$factor1<- factorial_casos$MR1
+subdata$factor2<- factorial_casos$MR2
+subdata$factor3<- factorial_casos$MR3
+```
+
+```{r}
+summary(factorial_casos)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
